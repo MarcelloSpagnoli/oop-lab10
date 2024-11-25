@@ -2,6 +2,8 @@ package it.unibo.oop.lab.lambda;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,7 +14,6 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 /**
  * This class will contain four utility functions on lists and maps, of which the first one is provided as example.
  * 
@@ -58,10 +59,9 @@ public final class LambdaUtilities {
      *         otherwise.
      */
     public static <T> List<Optional<T>> optFilter(final List<T> list, final Predicate<T> pre) {
-        /*
-         * Suggestion: consider Optional.filter
-         */
-        return null;
+        final List<Optional<T>> resultList = new LinkedList<>();
+        list.forEach(elem -> resultList.add(Optional.of(elem).filter(pre)));
+        return resultList;
     }
 
     /**
@@ -80,7 +80,14 @@ public final class LambdaUtilities {
         /*
          * Suggestion: consider Map.merge
          */
-        return null;
+        final Map<R, Set<T>> resultMap = new HashMap<>();
+        list.forEach(elem -> resultMap.merge(op.apply(elem), Set.of(elem), (oldV, newV) -> {
+            final Set<T> result = new HashSet<>(oldV);
+
+            result.addAll(newV);
+            return result;
+        }));
+        return resultMap;
     }
 
     /**
@@ -101,7 +108,11 @@ public final class LambdaUtilities {
          *
          * Keep in mind that a map can be iterated through its forEach method
          */
-        return null;
+        final Map<K, V> resultMap = new HashMap<>();
+        map.forEach((k, v) -> {
+            resultMap.put(k, v.orElse(def.get()));
+        });
+        return resultMap;
     }
 
     /**
@@ -110,7 +121,7 @@ public final class LambdaUtilities {
      */
     @SuppressWarnings("PMD.SystemPrintln")
     public static void main(final String[] args) {
-        final List<Integer> li = IntStream.range(1, 8).mapToObj(i -> Integer.valueOf(i)).collect(Collectors.toList());
+        final List<Integer> li = IntStream.range(1, 8).mapToObj(i -> Integer.valueOf(i)).collect(Collectors.toList());  //NOPMD 
         System.out.println(dup(li, x -> x + 100));
         /*
          * [1, 101, 2, 102, 3, 103, 4, 104, 5, 105, 6, 106, 7, 107]
