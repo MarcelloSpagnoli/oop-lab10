@@ -10,6 +10,8 @@ public final class Configuration {
     private final int min;
     private final int attempts;
 
+    
+
     private Configuration(final int max, final int min, final int attempts) {
         this.max = max;
         this.min = min;
@@ -71,7 +73,7 @@ public final class Configuration {
         private int max = MAX;
         private int attempts = ATTEMPTS;
         private boolean consumed = false;
-
+        
         /**
          * @param min the minimum value
          * @return this builder, for method chaining
@@ -111,4 +113,3 @@ public final class Configuration {
         }
     }
 }
-

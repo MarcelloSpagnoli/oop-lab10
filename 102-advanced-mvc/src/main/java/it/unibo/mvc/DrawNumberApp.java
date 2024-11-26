@@ -1,15 +1,20 @@
 package it.unibo.mvc;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.StringTokenizer;
 
+import static it.unibo.mvc.Configuration.Builder;
 /**
  */
 public final class DrawNumberApp implements DrawNumberViewObserver {
-    private static final int MIN = 0;
-    private static final int MAX = 100;
-    private static final int ATTEMPTS = 10;
+    private static final String PATH = "config.yml";
+    private static final int ELEMS_PER_LINE_CONFIG_FILE = 2;
 
     private final DrawNumber model;
     private final List<DrawNumberView> views;
@@ -27,7 +32,47 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
             view.setObserver(this);
             view.start();
         }
-        this.model = new DrawNumberImpl(MIN, MAX, ATTEMPTS);
+        this.model = this.modelBuilder(PATH);
+    }
+
+    private DrawNumber modelBuilder(final String path) {
+        Configuration model;
+        final Builder builder = new Builder();
+        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(ClassLoader.getSystemResourceAsStream(path)))) {
+            String line;
+            while (Objects.nonNull(line = reader.readLine())){
+                StringTokenizer tokenizer = new StringTokenizer(line, ": ");
+                if (tokenizer.countTokens() == ELEMS_PER_LINE_CONFIG_FILE) {
+                    switch (tokenizer.nextToken()) {
+                        case "minimum":
+                            builder.setMin(Integer.parseInt(tokenizer.nextToken()));
+                            break;
+                        case "maximum":
+                            builder.setMax(Integer.parseInt(tokenizer.nextToken()));
+                            break;
+                        case "attempts":
+                            builder.setAttempts(Integer.parseInt(tokenizer.nextToken()));
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        } catch (IOException e1){
+            for (final DrawNumberView view: views) {
+                view.displayError("File not found");
+            }
+        } catch (NumberFormatException e2) {
+            for (final DrawNumberView view: views) {
+                view.displayError("File format not ok");
+            }
+        } finally {
+            model = builder.build();
+        }
+        if (!model.isConsistent()) {
+            model = new Builder().build();
+        }
+        return new DrawNumberImpl(model.getMin(), model.getMax(), model.getAttempts());
     }
 
     @Override
@@ -39,7 +84,7 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
             }
         } catch (IllegalArgumentException e) {
             for (final DrawNumberView view: views) {
-                view.numberIncorrect();
+                view.displayError(e.getMessage());
             }
         }
     }
@@ -66,7 +111,13 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
      * @throws FileNotFoundException 
      */
     public static void main(final String... args) throws FileNotFoundException {
-        new DrawNumberApp(new DrawNumberViewImpl());
+        System.out.println(System.getProperty("user.dir"));
+        new DrawNumberApp(
+            new DrawNumberViewImpl(),
+            new DrawNumberViewImpl(),
+            new PrintStreamView(System.out),
+            new PrintStreamView("file.txt")
+        );
     }
 
 }
