@@ -1,13 +1,15 @@
 package it.unibo.mvc;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringTokenizer;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import static it.unibo.mvc.Configuration.Builder;
 /**
@@ -38,10 +40,14 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
     private DrawNumber modelBuilder(final String path) {
         Configuration model;
         final Builder builder = new Builder();
-        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(ClassLoader.getSystemResourceAsStream(path)))) {
-            String line;
-            while (Objects.nonNull(line = reader.readLine())){
-                StringTokenizer tokenizer = new StringTokenizer(line, ": ");
+        try (
+            BufferedReader reader = new BufferedReader(
+            new InputStreamReader(
+            ClassLoader.getSystemResourceAsStream(path), StandardCharsets.UTF_8
+            ))) {
+            String line = reader.readLine();
+            while (Objects.nonNull(line)) {
+                final StringTokenizer tokenizer = new StringTokenizer(line, ": ");
                 if (tokenizer.countTokens() == ELEMS_PER_LINE_CONFIG_FILE) {
                     switch (tokenizer.nextToken()) {
                         case "minimum":
@@ -57,8 +63,9 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
                             break;
                     }
                 }
+                line = reader.readLine();
             }
-        } catch (IOException e1){
+        } catch (IOException e1) {
             for (final DrawNumberView view: views) {
                 view.displayError("File not found");
             }
@@ -95,6 +102,10 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
     }
 
     @Override
+    @SuppressFBWarnings(
+        value = { "DM_EXIT" },
+        justification = "Exercise is designed in this way"
+    )
     public void quit() {
         /*
          * A bit harsh. A good application should configure the graphics to exit by
@@ -108,10 +119,9 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
     /**
      * @param args
      *            ignored
-     * @throws FileNotFoundException 
+     * @throws IOException 
      */
-    public static void main(final String... args) throws FileNotFoundException {
-        System.out.println(System.getProperty("user.dir"));
+    public static void main(final String... args) throws IOException {
         new DrawNumberApp(
             new DrawNumberViewImpl(),
             new DrawNumberViewImpl(),

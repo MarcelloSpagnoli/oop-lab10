@@ -14,13 +14,12 @@ repositories {
 }
 
 dependencies {
+    implementation("com.google.guava:guava:33.3.1-jre")
     // Use JUnit Jupiter API for testing.
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
 
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.3")
-
-    implementation("com.google.guava:guava-gwt:33.3.1-jre")
 }
 
 val mainClass: String by project
