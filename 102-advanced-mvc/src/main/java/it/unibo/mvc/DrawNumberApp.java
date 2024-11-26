@@ -126,7 +126,7 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
             new DrawNumberViewImpl(),
             new DrawNumberViewImpl(),
             new PrintStreamView(System.out),
-            new PrintStreamView("file.txt")
+            new PrintStreamView("report.log")
         );
     }
 
